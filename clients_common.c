@@ -106,13 +106,27 @@ void handle_get(struct client *client) {
 	// TODO: Flush the HTTP response header (copied above) to the client, and then, in a loop:
 	//         (i) read a chunk from the file into temporary_buffer;
 	//         (ii) flushes that chunk to the client
-
+	
+	client->nwritten = 0;
+	client->ntowrite = strlen(temporary_buffer);
 	flush_buffer(client);
 
 	int flag = 0;
 	while (!flag){
 		flag = fread(temporary_buffer, BUFFER_SIZE, 1, filename) % BUFFER_SIZE;
+
+		if(flag == -1) {
+			fclose(filename);
+			client->file = NULL;
+			client->status = STATUS_BAD;
+
+			//not sure how to do this part, but probably should modify fprintf
+			//fprintf(stderr, "Cannot write to client socket no. %d - closing connection\n", client->socket);
+			return 0;
+		}
+		//flush_buffer or flush_client?
 		flush_buffer(client);
+
 	}
 
 

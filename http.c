@@ -19,48 +19,44 @@ int header_complete(char *buffer, int buffer_length) {
 }
 
 int header_parse(char *buffer, int buffer_length, char *filename, int filename_length, char *protocol, int protocol_length, int *content_length) {
-	// if(!buffer || !filename || !protocol || !content_length) {
-	// 	fprintf(stderr, "Please provide non-null buffer/filename/protocol/content-length\n");
+	if(!buffer || !filename || !protocol || !content_length) {
+		fprintf(stderr, "Please provide non-null buffer/filename/protocol/content-length\n");
 
-	// 	return -1;
-	// }
+		return -1;
+	}
 
-	// if(buffer_length < 128 || filename_length < 128 || protocol_length < 16) {
-	// 	fprintf(stderr, "Please provide buffer/filename strings with sizes >= 128 and a protocol string with size >= 16\n");
+	if(buffer_length < 128 || filename_length < 128 || protocol_length < 16) {
+		fprintf(stderr, "Please provide buffer/filename strings with sizes >= 128 and a protocol string with size >= 16\n");
 
-	// 	return -1;
-	// }
+		return -1;
+	}
 
 	char* rest;
 
 	buffer[buffer_length] = '\0';
 
 	filename = strcasestr(buffer, "/") + 1;
-	filename_length = strlen(filename);	//are we given filename_length?
 
 	rest = strcasestr(filename, " ");
 	*rest = '\0';
 	rest++;
 
 	protocol = strcasestr(rest, "HTTP");
-	protocol_length = strlen(protocol);
 
 	rest = strcasestr(protocol, " ");
 	*rest = '\0';
 	rest++;
-
-	//extending for part II
-	// char* host = strcasestr(rest, "Host:");
-	// int host_length = strlen(host);
-
-	// rest = strcasestr(host, " ");
-	// *rest = '\0';
-	// rest++;
-
-	printf("%s\n", filename);
-	printf("%s\n", protocol);
-	// printf("%s\n", host);
-
+	
+	//this part should parse http put request content length
+	char* content_length_label = strcasestr(rest, "Content-Length:");
+	if(content_length_label != NULL){
+		rest = strcasestr(content_length_label, " ");
+		*rest = '\0';
+		rest++;
+		content_length = rest;
+		rest = strcasestr(content_length, " ");
+		rest = '\0';
+	}
 	return -1;
 }
 
@@ -73,37 +69,33 @@ void fill_reply_201(char *buffer, char *filename, char *protocol) {
 }
 
 void fill_reply_403(char *buffer, char *filename, char *protocol) {
+	//use sprintf instead;
+	sprintf(buffer, protocol);
+	sprintf(buffer, "403 Forbidden\n");
+	sprintf(buffer, "Filename: ");
+	sprintf(buffer, filename);
+	sprintf(buffer, "\n\n")
+	//not sure how to add html stuff
 }
 
 void fill_reply_404(char *buffer, char *filename, char *protocol) {
-	char* err404 = "404 not found\n";
 
-	int pointer = 0;
-
-	buffer[0] = protocol;
-
-	pointer += strlen(protocol);
-
-	buffer[pointer] = err404;
-
-	pointer+= strlen(err404);
-
-	buffer[pointer] = filename;
-
-	pointer += strlen(filename);
-
-	char* htmlformat = "HTML STUFF GOES HERE";
-	
-	buffer[pointer] = htmlformat;
-
-	
+	//use sprintf instead;
+	sprintf(buffer, protocol);
+	sprintf(buffer, "404 Not Found\n");
+	sprintf(buffer, "Filename: ");
+	sprintf(buffer, filename);
+	sprintf(buffer, "\n\n")
+	//not sure how to add html stuff
 
 }
 
 
 int main(){
 	//for testing
-	char header[128] = "PUT /filename.txt HTTP/1.1 Host: localhost:9000";
+	char header[128];
+	strcpy(header, "PUT /filename.txt HTTP/1.1 Host: localhost:9000");
+
 	int buffer_length;
 	char* filename;
 	int filename_length;
