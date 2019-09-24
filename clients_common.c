@@ -42,9 +42,21 @@ struct client *make_client(int socket) {
 
 int read_request(struct client *client) {
 	int result;
+	int nread = 0;
 
 	// TODO: don't live dangerously
-	read(client->socket, client->buffer, BUFFER_SIZE - 1);
+	while(client->state = E_RECV_REQUEST){ //should this be client->ntowrite?
+		
+		result = read(client->socket, client->buffer + nread, BUFFER_SIZE - 1);
+
+		if(result == -1) {
+			perror("read");
+			return -1;
+		}
+
+		client->nread += result;
+		nread +=result;
+	}
 
 	if(header_complete(client->buffer, client->nread)) {
 		// If you want to print what's in the request
@@ -94,6 +106,15 @@ void handle_get(struct client *client) {
 	// TODO: Flush the HTTP response header (copied above) to the client, and then, in a loop:
 	//         (i) read a chunk from the file into temporary_buffer;
 	//         (ii) flushes that chunk to the client
+
+	flush_buffer(client);
+
+	int flag = 0;
+	while (!flag){
+		flag = fread(temporary_buffer, BUFFER_SIZE, 1, filename) % BUFFER_SIZE;
+		flush_buffer(client);
+	}
+
 
 	fclose(client->file);
 	client->file = NULL;

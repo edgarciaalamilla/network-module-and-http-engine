@@ -76,6 +76,28 @@ void fill_reply_403(char *buffer, char *filename, char *protocol) {
 }
 
 void fill_reply_404(char *buffer, char *filename, char *protocol) {
+	char* err404 = "404 not found\n";
+
+	int pointer = 0;
+
+	buffer[0] = protocol;
+
+	pointer += strlen(protocol);
+
+	buffer[pointer] = err404;
+
+	pointer+= strlen(err404);
+
+	buffer[pointer] = filename;
+
+	pointer += strlen(filename);
+
+	char* htmlformat = "HTML STUFF GOES HERE";
+	
+	buffer[pointer] = htmlformat;
+
+	
+
 }
 
 
