@@ -15,6 +15,74 @@
 #include "networking.h"
 
 int create_server(int port) {
+	struct addrinfo result_hints;
+	struct addrinfo *result_list;
+
+	memset(&result_hints, 0, sizeof(struct addrinfo)) // set memory to zeros
+
+	result_hints.ai_family = AF_UNSPEC;
+	result_hints.ai_socktype = SOCK_STREAM;
+	result_hints.ai_flags = AI_PASSIVE;
+
+	int result = getaddrinfo(NULL, port, &result_hints, &result_list); // get address info
+
+	if(result != 0){
+		perror("Cannot obtain address");
+
+		return -1;
+	}
+
+	// Listening socket creation
+
+	int listen_socket;
+
+	for(struct addrinfo *result_curr = result_list; result_curr != NULL; result_curr = result_curr->ai_next) {
+		// Listening socket creation
+
+		listen_socket = socket(result_curr->ai_family, result_curr->ai_socktype, result_curr->ai_protocol);
+
+		if(listen_socket == -1) {
+			continue;
+		}
+
+		// Binding to a local address/port
+a
+		result = bind(listen_socket, result_curr->ai_addr, result_curr->ai_addrlen);
+
+		int yes = 1;
+
+		// lose the pesky "Address already in use" error message
+		if (setsockopt(listen_socket , SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes) == -1) {
+			perror("setsockopt");
+			exit(1);
+		} 
+
+		if(result == -1) {
+			close(listen_socket);
+			listen_socket = -1;
+
+			continue;
+		}
+
+		print_address_information("Listening in address [%s] port [%s]\n", result_curr->ai_addr, result_curr->ai_addrlen);
+
+		break;
+	}
+
+	if(listen_socket == -1) {
+		fprintf(stderr, "Not possible to bind to any address/port\n");
+
+		return -1;
+	}
+
+	result = listen(listen_socket, 5);
+
+	if(result == -1) {
+		perror("Impossible to listen to connections");
+
+		return -1;
+	}
+
 	return -1;
 }
 
