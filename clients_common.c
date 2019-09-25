@@ -44,8 +44,41 @@ int read_request(struct client *client) {
 	int result;
 	int nread = 0;
 
-	// TODO: don't live dangerously
-	while(client->state = E_RECV_REQUEST){ //should this be client->ntowrite?
+	// // TODO: don't live dangerously
+	// while(client->state = E_RECV_REQUEST){ //should this be client->ntowrite?
+		
+	// 	result = read(client->socket, client->buffer + nread, BUFFER_SIZE - 1);
+
+	// 	if(result == -1) {
+	// 		perror("read");
+	// 		return -1;
+	// 	}
+
+	// 	client->nread += result;
+	// 	nread +=result;
+
+	// 	if(header_complete(client->buffer, client->nread)) {
+	// 	// If you want to print what's in the request
+	// 	printf("Request:\n%s\n", client->buffer);
+
+	// 	if((client->method = header_parse(client->buffer, client->nread, client->filename, 128, client->protocol, 16, &client->content_length)) == -1) {
+	// 		fprintf(stderr, "Invalid header from client socket no. %d - closing connection\n", client->socket);
+
+	// 		client->status = STATUS_BAD;
+	// 		finish_client(client);
+
+	// 		return 0;
+	// 	}
+
+	// 	client->state = E_SEND_REPLY;
+	// 	}
+	// }
+
+	if(header_complete(client->buffer, client->nread)) {
+		// If you want to print what's in the request
+		printf("Request:\n%s\n", client->buffer);
+
+		while(client->state = E_RECV_REQUEST){ //is this right?
 		
 		result = read(client->socket, client->buffer + nread, BUFFER_SIZE - 1);
 
@@ -56,11 +89,8 @@ int read_request(struct client *client) {
 
 		client->nread += result;
 		nread +=result;
-	}
 
-	if(header_complete(client->buffer, client->nread)) {
-		// If you want to print what's in the request
-		printf("Request:\n%s\n", client->buffer);
+		}
 
 		if((client->method = header_parse(client->buffer, client->nread, client->filename, 128, client->protocol, 16, &client->content_length)) == -1) {
 			fprintf(stderr, "Invalid header from client socket no. %d - closing connection\n", client->socket);
@@ -111,28 +141,24 @@ void handle_get(struct client *client) {
 	client->ntowrite = strlen(temporary_buffer);
 	flush_buffer(client);
 
-	int flag = 0;
-	while (!flag){
-		flag = fread(temporary_buffer, BUFFER_SIZE, 1, filename) % BUFFER_SIZE;
+	int bytes_read = BUFFER_SIZE;
+	while (bytes_read == BUFFER_SIZE){
+		bytes_read = fread(temporary_buffer, BUFFER_SIZE, 1, filename) % BUFFER_SIZE;
 
-		if(flag == -1) {
+		if(bytes_read == -1) {
 			fclose(filename);
 			client->file = NULL;
 			client->status = STATUS_BAD;
 
-			//not sure how to do this part, but probably should modify fprintf
+			//do we need an fprintf
 			//fprintf(stderr, "Cannot write to client socket no. %d - closing connection\n", client->socket);
 			return 0;
 		}
-		//flush_buffer or flush_client?
 		flush_buffer(client);
-
 	}
-
 
 	fclose(client->file);
 	client->file = NULL;
-
 	client->status = STATUS_OK;
 	finish_client(client);
 }
@@ -157,10 +183,35 @@ void handle_put(struct client *client) {
 
 	strcpy(client->buffer, temporary_buffer);
 
-	// TODO: In a loop:
+		// TODO: In a loop:
 	//         (i) read a chunk from the client into temporary_buffer, up to client->content_length;
 	//         (ii) writes that chunk into the file opened above using fwrite()
 	//       Then, copy the 201 Created header into the buffer, and flush it back to the client
+	
+	int result = 0;
+	int nread = 0;
+	while (nread < client->content_length){
+		result = fread(temporary_buffer, BUFFER_SIZE, 1, filename) % BUFFER_SIZE;
+
+		if(result == -1) {
+			fclose(filename);
+			client->file = NULL;
+			client->status = STATUS_BAD;
+
+			//do we need an fprintf
+			//fprintf(stderr, "Cannot write to client socket no. %d - closing connection\n", client->socket);
+			return 0;
+		}
+
+		nread += result;
+
+		fwrite(temporary_buffer, BUFFER_SIZE, 1, client->file);
+
+	}
+
+	fill_reply_201(temporary_buffer, filename, protocol);
+	flush_buffer(client);
+
 
 	fclose(client->file);
 	client->file = NULL;
