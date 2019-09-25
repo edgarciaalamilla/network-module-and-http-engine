@@ -81,12 +81,12 @@ int read_request(struct client *client) {
 		while(client->state = E_RECV_REQUEST){ //is this right?
 		
 		result = read(client->socket, client->buffer + nread, BUFFER_SIZE - 1);
-
+		
 		if(result == -1) {
 			perror("read");
 			return -1;
 		}
-
+		//
 		client->nread += result;
 		nread +=result;
 
@@ -187,7 +187,7 @@ void handle_put(struct client *client) {
 	//         (i) read a chunk from the client into temporary_buffer, up to client->content_length;
 	//         (ii) writes that chunk into the file opened above using fwrite()
 	//       Then, copy the 201 Created header into the buffer, and flush it back to the client
-	
+
 	int result = 0;
 	int nread = 0;
 	while (nread < client->content_length){
@@ -204,8 +204,8 @@ void handle_put(struct client *client) {
 		}
 
 		nread += result;
-
-		fwrite(temporary_buffer, BUFFER_SIZE, 1, client->file);
+		//write contents of temp buffer to file opened
+		fwrite(client->file, BUFFER_SIZE, 1, temporary_buffer);
 
 	}
 
