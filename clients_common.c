@@ -98,26 +98,31 @@ void handle_get(struct client *client) {
 	client->ntowrite = strlen(temporary_buffer);
 	flush_buffer(client);
 
-	int bytes_read = BUFFER_SIZE;
-	while (bytes_read == BUFFER_SIZE){
-		bytes_read = fread(temporary_buffer, BUFFER_SIZE, 1, filename) % BUFFER_SIZE;
+	int bytes_left = obtain_file_size(client-filename);
+	int bytes_read = 0;
 
-		if(bytes_read == -1) {
-			fclose(filename);
+	while(bytes_left > 0){
+		bytes_read = fread(temporary_buffer, sizeof(char), BUFFER_SIZE, client->filename);
+
+		if(bytes_read < BUFFER_SIZE){
+			if(bytes_read == -1) {
+				fclose(filename);
+				client->file = NULL;
+				client->status = STATUS_BAD;
+
+				//do we need an fprintf
+				//fprintf(stderr, "Cannot write to client socket no. %d - closing connection\n", client->socket);
+				return -1;
+			}
+			flush_buffer(client);
+			fclose(client->file);
 			client->file = NULL;
-			client->status = STATUS_BAD;
-
-			//do we need an fprintf
-			//fprintf(stderr, "Cannot write to client socket no. %d - closing connection\n", client->socket);
-			return 0;
+			client->status = STATUS_OK;
+			finish_client(client);
 		}
 		flush_buffer(client);
+		bytes_left -= BUFFER_SIZE;
 	}
-
-	fclose(client->file);
-	client->file = NULL;
-	client->status = STATUS_OK;
-	finish_client(client);
 }
 
 void handle_put(struct client *client) {
