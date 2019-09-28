@@ -61,7 +61,7 @@ int read_request(struct client *client) {
 		client->state = E_SEND_REPLY;
 		}
 	}
-	return 1;
+	return (num_bytes_read == -1) ? -1 : num_bytes_read;
 }
 
 void handle_get(struct client *client) {
