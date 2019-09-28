@@ -98,22 +98,22 @@ void handle_get(struct client *client) {
 	client->ntowrite = strlen(temporary_buffer);
 	flush_buffer(client);
 
-	int bytes_left = obtain_file_size(client-filename);
+	int bytes_left = obtain_file_size(client->filename);
 	int bytes_read = 0;
 
 	while(bytes_left > 0){
 		bytes_read = fread(temporary_buffer, sizeof(char), BUFFER_SIZE, client->filename);
+		if(bytes_read == -1) {
+			fclose(filename);
+			client->file = NULL;
+			client->status = STATUS_BAD;
 
+			//do we need an fprintf
+			//fprintf(stderr, "Cannot write to client socket no. %d - closing connection\n", client->socket);
+			return -1;
+		}
 		if(bytes_read < BUFFER_SIZE){
-			if(bytes_read == -1) {
-				fclose(filename);
-				client->file = NULL;
-				client->status = STATUS_BAD;
 
-				//do we need an fprintf
-				//fprintf(stderr, "Cannot write to client socket no. %d - closing connection\n", client->socket);
-				return -1;
-			}
 			flush_buffer(client);
 			fclose(client->file);
 			client->file = NULL;
@@ -150,25 +150,34 @@ void handle_put(struct client *client) {
 	//         (ii) writes that chunk into the file opened above using fwrite()
 	//       Then, copy the 201 Created header into the buffer, and flush it back to the client
 
-	int result = 0;
-	int nread = 0;
-	while (nread < client->content_length){
-		result = fread(temporary_buffer, BUFFER_SIZE, 1, filename) % BUFFER_SIZE; // where did u intialize BUFFER_SIZE
+	client->nwritten = 0;
+	client->ntowrite = strlen(temporary_buffer);
+	flush_buffer(client);
 
-		if(result == -1) {
+	int bytes_left = obtain_file_size(client->filename);
+	int bytes_read = 0;
+
+	while(bytes_left > 0){
+		bytes_read = fread(temporary_buffer, sizeof(char), BUFFER_SIZE, client->filename);
+		if(bytes_read == -1) {
 			fclose(filename);
 			client->file = NULL;
 			client->status = STATUS_BAD;
 
 			//do we need an fprintf
 			//fprintf(stderr, "Cannot write to client socket no. %d - closing connection\n", client->socket);
-			return 0;
+			return -1;
 		}
+		if(bytes_read < BUFFER_SIZE){
 
-		nread += result;
-		//write contents of temp buffer to file opened
+			flush_buffer(client);
+			fclose(client->file);
+			client->file = NULL;
+			client->status = STATUS_OK;
+			finish_client(client);
+		}
 		fwrite(client->file, BUFFER_SIZE, 1, temporary_buffer);
-
+		bytes_left -= BUFFER_SIZE;
 	}
 
 	fill_reply_201(temporary_buffer, filename, protocol);
