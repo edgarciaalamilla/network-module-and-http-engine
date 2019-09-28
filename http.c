@@ -31,6 +31,10 @@ int header_parse(char *buffer, int buffer_length, char *filename, int filename_l
 		return -1;
 	}
 
+	//Why are filename and protocol length given?
+	//You aren't returning anything? Always -1.
+
+
 	char* rest;
 
 	buffer[buffer_length] = '\0';
