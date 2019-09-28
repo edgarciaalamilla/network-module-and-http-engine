@@ -31,10 +31,6 @@ int header_parse(char *buffer, int buffer_length, char *filename, int filename_l
 		return -1;
 	}
 
-	//Why are filename and protocol length given?
-	//You aren't returning anything? Always -1.
-
-
 	char* rest;
 
 	buffer[buffer_length] = '\0';
@@ -56,14 +52,12 @@ int header_parse(char *buffer, int buffer_length, char *filename, int filename_l
 		content_length_label += 16;
 		char* rest = strcasestr(content_length_label, " ");
 		*rest = '\0';
-
-		int cont_len = atoi(content_length_label);
 		
 		//should be fine now
 		content_length = (void*) (uintptr_t) atoi(content_length_label);
-
+		return METHOD_PUT;
 	}
-	return -1;
+	return METHOD_GET;
 }
 
 void fill_reply_200(char *buffer, char *filename, char *protocol, int filesize) {
