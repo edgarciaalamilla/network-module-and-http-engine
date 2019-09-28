@@ -79,17 +79,15 @@ int read_request(struct client *client) {
 		printf("Request:\n%s\n", client->buffer);
 
 		while(client->state = E_RECV_REQUEST){ //is this right?
-		
-		result = read(client->socket, client->buffer + nread, BUFFER_SIZE - 1);
-		
-		if(result == -1) {
-			perror("read");
-			return -1;
-		}
-		//
-		client->nread += result;
-		nread +=result;
-
+			result = read(client->socket, client->buffer + nread, BUFFER_SIZE - 1);
+			
+			if(result == -1) {
+				perror("read");
+				return -1;
+			}
+			
+			client->nread += result;
+			nread +=result; //why keep two things of the same thing?
 		}
 
 		if((client->method = header_parse(client->buffer, client->nread, client->filename, 128, client->protocol, 16, &client->content_length)) == -1) {
@@ -191,7 +189,7 @@ void handle_put(struct client *client) {
 	int result = 0;
 	int nread = 0;
 	while (nread < client->content_length){
-		result = fread(temporary_buffer, BUFFER_SIZE, 1, filename) % BUFFER_SIZE;
+		result = fread(temporary_buffer, BUFFER_SIZE, 1, filename) % BUFFER_SIZE; // where did u intialize BUFFER_SIZE
 
 		if(result == -1) {
 			fclose(filename);
