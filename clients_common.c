@@ -41,54 +41,14 @@ struct client *make_client(int socket) {
 }
 
 int read_request(struct client *client) {
-	int result;
-	int nread = 0;
+    int num_bytes_read = 0;
+    client->nread = 0;
 
-	// // TODO: don't live dangerously
-	// while(client->state = E_RECV_REQUEST){ //should this be client->ntowrite?
-		
-	// 	result = read(client->socket, client->buffer + nread, BUFFER_SIZE - 1);
-
-	// 	if(result == -1) {
-	// 		perror("read");
-	// 		return -1;
-	// 	}
-
-	// 	client->nread += result;
-	// 	nread +=result;
-
-	// 	if(header_complete(client->buffer, client->nread)) {
-	// 	// If you want to print what's in the request
-	// 	printf("Request:\n%s\n", client->buffer);
-
-	// 	if((client->method = header_parse(client->buffer, client->nread, client->filename, 128, client->protocol, 16, &client->content_length)) == -1) {
-	// 		fprintf(stderr, "Invalid header from client socket no. %d - closing connection\n", client->socket);
-
-	// 		client->status = STATUS_BAD;
-	// 		finish_client(client);
-
-	// 		return 0;
-	// 	}
-
-	// 	client->state = E_SEND_REPLY;
-	// 	}
-	// }
-
-	if(header_complete(client->buffer, client->nread)) {
+	while((num_bytes_read = read(client->socket, client->buffer + client->nread, BUFFER_SIZE - 1 - client->nread)) != -1){
+		client->nread += num_bytes_read;
+		if(header_complete(client->buffer, client->nread)) {
 		// If you want to print what's in the request
 		printf("Request:\n%s\n", client->buffer);
-
-		while(client->state = E_RECV_REQUEST){ //is this right?
-			result = read(client->socket, client->buffer + nread, BUFFER_SIZE - 1);
-			
-			if(result == -1) {
-				perror("read");
-				return -1;
-			}
-			
-			client->nread += result;
-			nread +=result; //why keep two things of the same thing?
-		}
 
 		if((client->method = header_parse(client->buffer, client->nread, client->filename, 128, client->protocol, 16, &client->content_length)) == -1) {
 			fprintf(stderr, "Invalid header from client socket no. %d - closing connection\n", client->socket);
@@ -98,10 +58,9 @@ int read_request(struct client *client) {
 
 			return 0;
 		}
-
 		client->state = E_SEND_REPLY;
+		}
 	}
-
 	return 1;
 }
 
