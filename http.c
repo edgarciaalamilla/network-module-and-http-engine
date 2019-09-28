@@ -19,17 +19,17 @@ int header_complete(char *buffer, int buffer_length) {
 }
 
 int header_parse(char *buffer, int buffer_length, char *filename, int filename_length, char *protocol, int protocol_length, int *content_length) {
-	// if(!buffer || !filename || !protocol || !content_length) {
-	// 	fprintf(stderr, "Please provide non-null buffer/filename/protocol/content-length\n");
+	if(!buffer || !filename || !protocol || !content_length) {
+		fprintf(stderr, "Please provide non-null buffer/filename/protocol/content-length\n");
 
-	// 	return -1;
-	// }
+		return -1;
+	}
 
-	// if(buffer_length < 128 || filename_length < 128 || protocol_length < 16) {
-	// 	fprintf(stderr, "Please provide buffer/filename strings with sizes >= 128 and a protocol string with size >= 16\n");
+	if(buffer_length < 128 || filename_length < 128 || protocol_length < 16) {
+		fprintf(stderr, "Please provide buffer/filename strings with sizes >= 128 and a protocol string with size >= 16\n");
 
-	// 	return -1;
-	// }
+		return -1;
+	}
 
 	char* rest;
 
@@ -46,19 +46,18 @@ int header_parse(char *buffer, int buffer_length, char *filename, int filename_l
 	rest = strcasestr(protocol, " ");
 	*rest = '\0';
 	rest++;
-	// //this part should parse http put request content length
+
 	char* content_length_label = strcasestr(rest, "Content-Length:");
 	if(content_length_label != NULL){
 		content_length_label += 16;
 		char* rest = strcasestr(content_length_label, " ");
 		*rest = '\0';
 
-
-		//cant get content_length
-		content_length = atoi(content_length_label);
-		printf("%d", content_length);
-
+		int cont_len = atoi(content_length_label);
 		
+		//should be fine now
+		content_length = (void*) (uintptr_t) atoi(content_length_label);
+
 	}
 	return -1;
 }
