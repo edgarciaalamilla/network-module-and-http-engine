@@ -33,9 +33,10 @@ int header_parse(char *buffer, int buffer_length, char *filename, int filename_l
 	char* request; 
 	char* rest;
 
+
 	buffer[buffer_length] = '\0';
 
-	filename = strcasestr(rest, "/") + 1;
+	filename = strcasestr(buffer, " /") + 1;
 
 	rest = strcasestr(filename, " ");
 	*rest = '\0';
@@ -43,10 +44,11 @@ int header_parse(char *buffer, int buffer_length, char *filename, int filename_l
 
 	protocol = strcasestr(rest, "HTTP");
 
-	rest = strcasestr(protocol, " ");
+	rest = strcasestr(protocol, "\r\n");
 	*rest = '\0';
 	rest++;
 
+	printf("\n\nhi\n\n");
 
 	char* content_length_label = strcasestr(rest, "Content-Length:");
 	if(content_length_label != NULL){

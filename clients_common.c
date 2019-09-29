@@ -41,27 +41,45 @@ struct client *make_client(int socket) {
 }
 
 int read_request(struct client *client) {
-    int num_bytes_read = 0;
+	int num_bytes_read = 0;
     client->nread = 0;
 
-	while((num_bytes_read = read(client->socket, client->buffer + client->nread, BUFFER_SIZE - 1 - client->nread)) != -1){
-		client->nread += num_bytes_read;
-		if(header_complete(client->buffer, client->nread)) {
-		// If you want to print what's in the request
-		printf("Request:\n%s\n", client->buffer);
+	// while(client->ntowrite) {
+	// 	result = write(client->socket, client->buffer + client->nwritten, client->ntowrite);
 
-		if((client->method = header_parse(client->buffer, client->nread, client->filename, 128, client->protocol, 16, &client->content_length)) == -1) {
-			fprintf(stderr, "Invalid header from client socket no. %d - closing connection\n", client->socket);
+	// 	if(result == -1) {
+	// 		fprintf(stderr, "Cannot write to client socket no. %d - closing connection\n", client->socket);
 
-			client->status = STATUS_BAD;
-			finish_client(client);
+	// 		return 0;
+	// 	}
 
+	// 	client->nwritten += result;
+	// 	client->ntowrite -= result;
+	// }
+
+	while((num_bytes_read = read(client->socket, client->buffer + client->nread, BUFFER_SIZE - 1 - client->nread)) != 0){
+		if(num_bytes_read == -1){
+			fprintf(stderr, "Cannot read from client socket no. %d - closing connection\n", client->socket);
 			return 0;
 		}
-		client->state = E_SEND_REPLY;
+		client->nread += num_bytes_read;
+		if(header_complete(client->buffer, client->nread)) {
+			// If you want to print what's in the request
+			printf("Request:\n%s\n", client->buffer);
+
+			if((client->method = header_parse(client->buffer, client->nread, client->filename, 128, client->protocol, 16, &client->content_length)) == -1) {
+				fprintf(stderr, "Invalid header from client socket no. %d - closing connection\n", client->socket);
+
+				client->status = STATUS_BAD;
+				finish_client(client);
+
+				return 0;
+			}
+			client->state = E_SEND_REPLY;
+			break;
 		}
 	}
-	return (num_bytes_read == -1) ? -1 : num_bytes_read;
+	return client->nread;
 }
 
 void handle_get(struct client *client) {

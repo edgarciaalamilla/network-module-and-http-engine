@@ -8,8 +8,8 @@
             "type": "lldb",
             "request": "launch",
             "name": "Debug",
-            "program": "${workspaceFolder}/<your program>",
-            "args": [],
+            "program": "${workspaceFolder}/webserver",
+            "args": ["4000"],
             "cwd": "${workspaceFolder}"
         }
     ]
