@@ -30,12 +30,12 @@ int header_parse(char *buffer, int buffer_length, char *filename, int filename_l
 
 		return -1;
 	}
-
+	char* request; 
 	char* rest;
 
 	buffer[buffer_length] = '\0';
 
-	filename = strcasestr(buffer, "/") + 1;
+	filename = strcasestr(rest, "/") + 1;
 
 	rest = strcasestr(filename, " ");
 	*rest = '\0';
@@ -46,6 +46,7 @@ int header_parse(char *buffer, int buffer_length, char *filename, int filename_l
 	rest = strcasestr(protocol, " ");
 	*rest = '\0';
 	rest++;
+
 
 	char* content_length_label = strcasestr(rest, "Content-Length:");
 	if(content_length_label != NULL){
@@ -61,7 +62,7 @@ int header_parse(char *buffer, int buffer_length, char *filename, int filename_l
 }
 
 void fill_reply_200(char *buffer, char *filename, char *protocol, int filesize) {
-	sprintf(buffer, "%s 200 OK\r\nFilename: %s\r\nContent-Length: %d\r\n\r\n", protocol, filename, filesize);
+	sprintf(buffer, "%s 200 OK\r\nFilename: %s\r\nContent-Length: %d\r\n\r\n", protocol, filename, filesize); //have to show file content
 }
 
 void fill_reply_201(char *buffer, char *filename, char *protocol) {

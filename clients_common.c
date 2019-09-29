@@ -102,7 +102,7 @@ void handle_get(struct client *client) {
 	int bytes_read = 0;
 
 	while(bytes_left > 0){
-		bytes_read = fread(temporary_buffer, sizeof(char), BUFFER_SIZE, (FILE*)client->filename);
+		bytes_read = fread(client->buffer, sizeof(char), BUFFER_SIZE, (FILE*)client->filename);
 		if(bytes_read == -1) {
 			fclose((FILE*) filename);
 			client->file = NULL;
