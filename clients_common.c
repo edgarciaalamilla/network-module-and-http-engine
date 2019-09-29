@@ -102,15 +102,15 @@ void handle_get(struct client *client) {
 	int bytes_read = 0;
 
 	while(bytes_left > 0){
-		bytes_read = fread(temporary_buffer, sizeof(char), BUFFER_SIZE, client->filename);
+		bytes_read = fread(temporary_buffer, sizeof(char), BUFFER_SIZE, (FILE*)client->filename);
 		if(bytes_read == -1) {
-			fclose(filename);
+			fclose((FILE*) filename);
 			client->file = NULL;
 			client->status = STATUS_BAD;
 
 			//do we need an fprintf
 			//fprintf(stderr, "Cannot write to client socket no. %d - closing connection\n", client->socket);
-			return -1;
+			return;
 		}
 		if(bytes_read < BUFFER_SIZE){
 
@@ -158,15 +158,15 @@ void handle_put(struct client *client) {
 	int bytes_read = 0;
 
 	while(bytes_left > 0){
-		bytes_read = fread(temporary_buffer, sizeof(char), BUFFER_SIZE, client->filename);
+		bytes_read = fread(temporary_buffer, sizeof(char), BUFFER_SIZE, (FILE*)client->filename);
 		if(bytes_read == -1) {
-			fclose(filename);
+			fclose((FILE*)filename);
 			client->file = NULL;
 			client->status = STATUS_BAD;
 
 			//do we need an fprintf
 			//fprintf(stderr, "Cannot write to client socket no. %d - closing connection\n", client->socket);
-			return -1;
+			return;
 		}
 		if(bytes_read < BUFFER_SIZE){
 
@@ -176,7 +176,7 @@ void handle_put(struct client *client) {
 			client->status = STATUS_OK;
 			finish_client(client);
 		}
-		fwrite(client->file, BUFFER_SIZE, 1, temporary_buffer);
+		fwrite(client->file, BUFFER_SIZE, 1, (FILE*)temporary_buffer);
 		bytes_left -= BUFFER_SIZE;
 	}
 

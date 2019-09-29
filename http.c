@@ -90,16 +90,16 @@ void fill_reply_404(char *buffer, char *filename, char *protocol) {
 }
 
 
-int main(){
-	//for testing
-	char header[128];
-	strcpy(header, "PUT /filename.txt HTTP/1.1 Host: localhost:9000 User-Agent: curl/7.54.0 Accept: */* Content-Length: 14 Expect: 100-continue ");
+// int main(){
+// 	//for testing
+// 	char header[128];
+// 	strcpy(header, "PUT /filename.txt HTTP/1.1 Host: localhost:9000 User-Agent: curl/7.54.0 Accept: */* Content-Length: 14 Expect: 100-continue ");
 
-	int buffer_length;
-	char* filename;
-	int filename_length; 
-	char* protocol;
-	int protocol_length;
-	int* content_length;
-	header_parse(header, 128, filename, filename_length, protocol, protocol_length, content_length);
-}
+// 	int buffer_length;
+// 	char* filename;
+// 	int filename_length; 
+// 	char* protocol;
+// 	int protocol_length;
+// 	int* content_length;
+// 	header_parse(header, 128, filename, filename_length, protocol, protocol_length, content_length);
+// }

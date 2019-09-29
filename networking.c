@@ -18,13 +18,18 @@ int create_server(int port) {
 	struct addrinfo result_hints;
 	struct addrinfo *result_list;
 
-	memset(&result_hints, 0, sizeof(struct addrinfo)) // set memory to zeros
+	memset(&result_hints, 0, sizeof(struct addrinfo)); // set memory to zeros
 
 	result_hints.ai_family = AF_UNSPEC;
 	result_hints.ai_socktype = SOCK_STREAM;
 	result_hints.ai_flags = AI_PASSIVE;
 
-	int result = getaddrinfo(NULL, port, &result_hints, &result_list); // get address info
+
+	char port_number[10];
+	
+	snprintf(port_number, 10, "%d", port);
+
+	int result = getaddrinfo(NULL, (char*) port_number, &result_hints, &result_list); // get address info
 
 	if(result != 0){
 		perror("Cannot obtain address");
@@ -33,7 +38,6 @@ int create_server(int port) {
 	}
 
 	// Listening socket creation
-
 	int listen_socket;
 
 	for(struct addrinfo *result_curr = result_list; result_curr != NULL; result_curr = result_curr->ai_next) {
@@ -46,7 +50,6 @@ int create_server(int port) {
 		}
 
 		// Binding to a local address/port
-a
 		result = bind(listen_socket, result_curr->ai_addr, result_curr->ai_addrlen);
 
 		int yes = 1;
@@ -64,7 +67,7 @@ a
 			continue;
 		}
 
-		print_address_information("Listening in address [%s] port [%s]\n", result_curr->ai_addr, result_curr->ai_addrlen);
+		//print_address_information("Listening in address [%s] port [%s]\n", result_curr->ai_addr, result_curr->ai_addrlen);
 
 		break;
 	}
@@ -82,8 +85,9 @@ a
 
 		return -1;
 	}
-
-	return -1;
+	//make_nonblocking(listen_socket, 1);
+	return listen_socket;
+	
 }
 
 int accept_client(int accept_socket) {
