@@ -61,18 +61,16 @@ int main(int argc, char **argv) {
 		get_peer_information(client_socket, host, 1024, &port);
 		printf("New connection from %s, port %d\n", host, port);
 
-		// pid_t pid = fork();
+		pid_t pid = fork();
 
-		// if(pid == 0) {
+		if(pid == 0) {
 			struct client* client = make_client(client_socket);
 
 			if(read_request(client)) {
-				printf("\nwriting reply\n");
 				write_reply(client);
 			}
-			printf("\nexiting\n");
 			exit(client->status);
-		// }
+		}
 
 		close(client_socket);
 	}

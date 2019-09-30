@@ -21,7 +21,6 @@ int header_complete(char *buffer, int buffer_length) {
 int header_parse(char *buffer, int buffer_length, char *filename, int filename_length, char *protocol, int protocol_length, int *content_length) {
 	if(!buffer || !filename || !protocol || !content_length) {
 		fprintf(stderr, "Please provide non-null buffer/filename/protocol/content-length\n");
-
 		return -1;
 	}
 
@@ -34,36 +33,26 @@ int header_parse(char *buffer, int buffer_length, char *filename, int filename_l
 	char* rest;
 	char* temp;
 
-
 	buffer[buffer_length] = '\0';
-	
 
-	// *(filename) = *(strcasestr(buffer, " /") + 1);
 	temp = strcasestr(buffer, "/") + 1;
 	rest = strcasestr(temp, " ");
 	*rest = '\0';
 	rest++;
-
 	strcpy(filename, temp);
 
 	temp = strcasestr(rest, "HTTP");
-
 	rest = strcasestr(temp, "\r\n");
 	*rest = '\0';
 	rest++;
-
 	strcpy(protocol, temp);
 
-	// char* content_length_label = strcasestr(rest, "Content-Length:");
 	temp = (strcasestr(rest, "Content-Length:"));
 	if(temp != NULL){
 		temp += 16;
-		rest = strcasestr(temp, " ");
+		rest = strcasestr(temp, "\r");
 		*rest = '\0';
-		
-		//should be fine now
-		content_length = (int*) (temp);
-		// content_length = (void*) (uintptr_t) atoi(temp);
+		*(content_length) = atoi(temp);
 		return METHOD_PUT;
 	}
 	return METHOD_GET;
@@ -78,13 +67,12 @@ void fill_reply_201(char *buffer, char *filename, char *protocol) {
 }
 
 void fill_reply_403(char *buffer, char *filename, char *protocol) {
-	//use sprintf instead;
 	sprintf(buffer, "%s", protocol);
 	sprintf(buffer, "403 Not Found\n");
 	sprintf(buffer, "Filename: ");
 	sprintf(buffer, "%s",filename);
 	sprintf(buffer, "\n\n");
-	//not sure how to add html stuff
+	sprintf(buffer, "<html> <p>Error 403! You do not have permission to access.</p> </html>");
 }
 
 void fill_reply_404(char *buffer, char *filename, char *protocol) {
@@ -94,21 +82,5 @@ void fill_reply_404(char *buffer, char *filename, char *protocol) {
 	sprintf(buffer, "Filename: ");
 	sprintf(buffer, "%s",filename);
 	sprintf(buffer, "\n\n");
-	//not sure how to add html stuff
-
+	sprintf(buffer, "<html> <p>Error 404! The page does not exist.</p> </html>");
 }
-
-
-// int main(){
-// 	//for testing
-// 	char header[128];
-// 	strcpy(header, "PUT /filename.txt HTTP/1.1 Host: localhost:9000 User-Agent: curl/7.54.0 Accept: */* Content-Length: 14 Expect: 100-continue ");
-
-// 	int buffer_length;
-// 	char* filename;
-// 	int filename_length; 
-// 	char* protocol;
-// 	int protocol_length;
-// 	int* content_length;
-// 	header_parse(header, 128, filename, filename_length, protocol, protocol_length, content_length);
-// }

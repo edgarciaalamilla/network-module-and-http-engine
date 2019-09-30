@@ -24,7 +24,6 @@ int create_server(int port) {
 	result_hints.ai_socktype = SOCK_STREAM;
 	result_hints.ai_flags = AI_PASSIVE;
 
-
 	char port_number[10];
 	
 	snprintf(port_number, 10, "%d", port);
@@ -49,9 +48,8 @@ int create_server(int port) {
 			continue;
 		}
 
-		int yes = 1;
-
 		// lose the pesky "Address already in use" error message
+		int yes = 1;
 		if (setsockopt(listen_socket , SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes) == -1) {
 			perror("setsockopt");
 			exit(1);
@@ -63,12 +61,8 @@ int create_server(int port) {
 		if(result == -1) {
 			close(listen_socket);
 			listen_socket = -1;
-
 			continue;
 		}
-
-		//print_address_information("Listening in address [%s] port [%s]\n", result_curr->ai_addr, result_curr->ai_addrlen);
-
 		break;
 	}
 
@@ -85,7 +79,6 @@ int create_server(int port) {
 
 		return -1;
 	}
-	//make_nonblocking(listen_socket, 1);
 	return listen_socket;
 	
 }
