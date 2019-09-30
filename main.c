@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 		// pid_t pid = fork();
 
 		// if(pid == 0) {
-			struct client *client = make_client(client_socket);
+			struct client* client = make_client(client_socket);
 
 			if(read_request(client)) {
 				printf("\nwriting reply\n");

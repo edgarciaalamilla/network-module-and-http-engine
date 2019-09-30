@@ -18,7 +18,7 @@
 int flush_buffer(struct client *client);
 int obtain_file_size(char *filename);
 
-struct client *make_client(int socket) {
+struct client* make_client(int socket) {
 	struct client *new_client = (struct client *) malloc(sizeof(struct client));
 
 	if(new_client != NULL) {
@@ -40,7 +40,7 @@ struct client *make_client(int socket) {
 	return new_client;
 }
 
-int read_request(struct client *client) {
+int read_request(struct client* client) {
 	int num_bytes_read = 0;
     client->nread = 0;
 
@@ -120,7 +120,7 @@ void handle_get(struct client *client) {
 	int bytes_read = 0;
 
 	while(bytes_left > 0){
-		bytes_read = fread(client->buffer, sizeof(char), BUFFER_SIZE, (FILE*)client->filename);
+		bytes_read = fread(client->buffer, sizeof(char), BUFFER_SIZE, client->file);
 		if(bytes_read == -1) {
 			fclose((FILE*) filename);
 			client->file = NULL;
@@ -137,10 +137,17 @@ void handle_get(struct client *client) {
 			client->file = NULL;
 			client->status = STATUS_OK;
 			finish_client(client);
+			bytes_left -= BUFFER_SIZE;
+			return;
 		}
 		flush_buffer(client);
 		bytes_left -= BUFFER_SIZE;
 	}
+	fclose(client->file);
+	client->file = NULL;
+	client->status = STATUS_OK;
+	finish_client(client);
+	return;
 }
 
 void handle_put(struct client *client) {

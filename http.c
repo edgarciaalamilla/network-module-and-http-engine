@@ -32,32 +32,38 @@ int header_parse(char *buffer, int buffer_length, char *filename, int filename_l
 	}
 	char* request; 
 	char* rest;
+	char* temp;
 
 
 	buffer[buffer_length] = '\0';
+	
 
-	filename = strcasestr(buffer, " /") + 1;
-
-	rest = strcasestr(filename, " ");
+	// *(filename) = *(strcasestr(buffer, " /") + 1);
+	temp = strcasestr(buffer, "/") + 1;
+	rest = strcasestr(temp, " ");
 	*rest = '\0';
 	rest++;
 
-	protocol = strcasestr(rest, "HTTP");
+	strcpy(filename, temp);
 
-	rest = strcasestr(protocol, "\r\n");
+	temp = strcasestr(rest, "HTTP");
+
+	rest = strcasestr(temp, "\r\n");
 	*rest = '\0';
 	rest++;
 
-	printf("\n\nhi\n\n");
+	strcpy(protocol, temp);
 
-	char* content_length_label = strcasestr(rest, "Content-Length:");
-	if(content_length_label != NULL){
-		content_length_label += 16;
-		char* rest = strcasestr(content_length_label, " ");
+	// char* content_length_label = strcasestr(rest, "Content-Length:");
+	temp = (strcasestr(rest, "Content-Length:"));
+	if(temp != NULL){
+		temp += 16;
+		rest = strcasestr(temp, " ");
 		*rest = '\0';
 		
 		//should be fine now
-		content_length = (void*) (uintptr_t) atoi(content_length_label);
+		content_length = (int*) (temp);
+		// content_length = (void*) (uintptr_t) atoi(temp);
 		return METHOD_PUT;
 	}
 	return METHOD_GET;
