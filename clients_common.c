@@ -131,7 +131,8 @@ void handle_get(struct client *client) {
 			return;
 		}
 		if(bytes_read < BUFFER_SIZE){
-
+			client->nwritten = 0;
+			client->ntowrite = strlen(client->buffer);
 			flush_buffer(client);
 			fclose(client->file);
 			client->file = NULL;
@@ -140,6 +141,8 @@ void handle_get(struct client *client) {
 			bytes_left -= BUFFER_SIZE;
 			return;
 		}
+		client->nwritten = 0;
+		client->ntowrite = strlen(client->buffer);
 		flush_buffer(client);
 		bytes_left -= BUFFER_SIZE;
 	}

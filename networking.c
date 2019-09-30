@@ -49,9 +49,6 @@ int create_server(int port) {
 			continue;
 		}
 
-		// Binding to a local address/port
-		result = bind(listen_socket, result_curr->ai_addr, result_curr->ai_addrlen);
-
 		int yes = 1;
 
 		// lose the pesky "Address already in use" error message
@@ -59,6 +56,9 @@ int create_server(int port) {
 			perror("setsockopt");
 			exit(1);
 		} 
+
+		// Binding to a local address/port
+		result = bind(listen_socket, result_curr->ai_addr, result_curr->ai_addrlen);
 
 		if(result == -1) {
 			close(listen_socket);
