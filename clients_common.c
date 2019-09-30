@@ -44,19 +44,6 @@ int read_request(struct client* client) {
 	int num_bytes_read = 0;
     client->nread = 0;
 
-	// while(client->ntowrite) {
-	// 	result = write(client->socket, client->buffer + client->nwritten, client->ntowrite);
-
-	// 	if(result == -1) {
-	// 		fprintf(stderr, "Cannot write to client socket no. %d - closing connection\n", client->socket);
-
-	// 		return 0;
-	// 	}
-
-	// 	client->nwritten += result;
-	// 	client->ntowrite -= result;
-	// }
-
 	while((num_bytes_read = read(client->socket, client->buffer + client->nread, BUFFER_SIZE - 1 - client->nread)) != 0){
 		if(num_bytes_read == -1){
 			fprintf(stderr, "Cannot read from client socket no. %d - closing connection\n", client->socket);
@@ -119,6 +106,8 @@ void handle_get(struct client *client) {
 	int bytes_left = obtain_file_size(client->filename);
 	int bytes_read = 0;
 
+	int total = 0;
+
 	while(bytes_left > 0){
 		bytes_read = fread(client->buffer, sizeof(char), BUFFER_SIZE, client->file);
 		if(bytes_read == -1) {
@@ -132,17 +121,20 @@ void handle_get(struct client *client) {
 		}
 		if(bytes_read < BUFFER_SIZE){
 			client->nwritten = 0;
-			client->ntowrite = strlen(client->buffer);
+			client->ntowrite = bytes_read;
+			total += client->ntowrite;
 			flush_buffer(client);
 			fclose(client->file);
 			client->file = NULL;
 			client->status = STATUS_OK;
 			finish_client(client);
 			bytes_left -= BUFFER_SIZE;
+			printf("\nTOTAL BYTES SENT: %d\n", total);
 			return;
 		}
 		client->nwritten = 0;
-		client->ntowrite = strlen(client->buffer);
+		client->ntowrite = bytes_read;
+		total += client->ntowrite;
 		flush_buffer(client);
 		bytes_left -= BUFFER_SIZE;
 	}
@@ -150,6 +142,7 @@ void handle_get(struct client *client) {
 	client->file = NULL;
 	client->status = STATUS_OK;
 	finish_client(client);
+	printf("\nTOTAL BYTES SENT: %d\n", total);
 	return;
 }
 
